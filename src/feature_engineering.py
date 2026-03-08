@@ -3,12 +3,13 @@ feature_engineering.py
 
 Feature engineering module for the FinShield Fraud Detection Platform.
 
-This module prepares the dataset for machine learning by:
+Responsibilities of this module:
 
-1. Creating additional behavioral and risk-based features
-2. Removing identifiers and leakage variables
-3. Separating features (X) and target (y)
-4. Returning categorical and numerical feature lists for preprocessing pipelines
+1. Create additional behavioral and interaction features
+2. Remove identifiers and leakage variables
+3. Separate modeling dataset (X, y)
+4. Preserve entity identifiers for traceability
+5. Return categorical and numerical column lists for ML pipelines
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ TARGET_COLUMN = "is_fraud"
 
 
 # ------------------------------------------------
-# Columns excluded from modeling
+# Identifier columns (kept for traceability only)
 # ------------------------------------------------
 
 ID_COLUMNS = [
@@ -36,10 +37,20 @@ ID_COLUMNS = [
     "device_id",
 ]
 
+
+# ------------------------------------------------
+# Columns that leak target information
+# ------------------------------------------------
+
 LEAKAGE_COLUMNS = [
     "fraud_risk_score",
     "fraud_probability",
 ]
+
+
+# ------------------------------------------------
+# Raw columns excluded from modeling
+# ------------------------------------------------
 
 RAW_EXCLUDE_COLUMNS = [
     "timestamp",
@@ -92,7 +103,7 @@ NUMERICAL_COLUMNS = [
     "web_night_transaction",
     "very_high_amount_foreign",
 
-    # new engineered features
+    # Additional engineered features
     "log_transaction_amount",
     "txn_velocity",
     "customer_risk_score",
@@ -109,72 +120,61 @@ NUMERICAL_COLUMNS = [
 
 def create_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Create additional behavioral and interaction features.
-
-    These features attempt to capture abnormal spending patterns,
-    customer risk indicators, and merchant-related fraud signals.
+    Create additional behavioral and interaction features
+    used by the fraud detection model.
     """
 
     data = df.copy()
 
-    # --------------------------------------------
+    # ------------------------------------------------
     # Log-transformed transaction amount
-    # --------------------------------------------
-    # Financial transaction values often follow a heavy-tailed distribution.
-    # Applying log transformation stabilizes variance and reduces skewness.
+    # ------------------------------------------------
+    # Reduces skewness of heavy-tailed financial values
     data["log_transaction_amount"] = np.log1p(data["transaction_amount"])
 
-    # --------------------------------------------
+    # ------------------------------------------------
     # Transaction velocity
-    # --------------------------------------------
-    # Average number of transactions per day in the last week.
-    # Sudden spikes in velocity may indicate automated or fraudulent activity.
+    # ------------------------------------------------
+    # Average number of transactions per day in the last week
     data["txn_velocity"] = data["transactions_last_7d"] / 7
 
-    # --------------------------------------------
+    # ------------------------------------------------
     # Customer risk score
-    # --------------------------------------------
-    # Composite indicator combining declines and chargebacks.
-    # Prior payment issues often correlate with future fraud attempts.
+    # ------------------------------------------------
+    # Combines declines and chargebacks
     data["customer_risk_score"] = (
         data["declines_last_30d"] * 0.5
         + data["chargebacks_last_90d"] * 1.5
     )
 
-    # --------------------------------------------
+    # ------------------------------------------------
     # Decline ratio
-    # --------------------------------------------
-    # Ratio of declined transactions to recent transaction activity.
-    # +1 is added to the denominator to avoid division by zero
-    # and stabilize the metric for low activity customers.
+    # ------------------------------------------------
+    # Ratio of declines relative to recent activity
+    # +1 prevents division by zero
     data["decline_ratio"] = (
         data["declines_last_30d"]
         / (data["transactions_last_7d"] + 1)
     )
 
-    # --------------------------------------------
-    # Amount × merchant risk interaction
-    # --------------------------------------------
-    # High-value transactions at high-risk merchants
-    # are more suspicious than either factor alone.
+    # ------------------------------------------------
+    # Interaction: amount × merchant risk
+    # ------------------------------------------------
     data["amount_merchant_risk"] = (
         data["transaction_amount"]
         * data["merchant_risk_score"]
     )
 
-    # --------------------------------------------
-    # New customer indicator
-    # --------------------------------------------
-    # Fraud often targets recently created accounts.
+    # ------------------------------------------------
+    # New customer flag
+    # ------------------------------------------------
     data["is_new_customer"] = (
         data["customer_tenure_days"] < 90
     ).astype(int)
 
-    # --------------------------------------------
-    # Abnormal activity flag
-    # --------------------------------------------
-    # Captures unusually high recent activity combined
-    # with spending significantly above historical average.
+    # ------------------------------------------------
+    # Abnormal activity
+    # ------------------------------------------------
     data["abnormal_activity"] = (
         (data["transactions_last_7d"] > 15)
         & (data["amount_vs_avg_ratio"] > 2)
@@ -189,15 +189,26 @@ def create_features(df: pd.DataFrame) -> pd.DataFrame:
 
 def get_modeling_data(
     df: pd.DataFrame,
-) -> Tuple[pd.DataFrame, pd.Series, List[str], List[str]]:
+) -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, List[str], List[str]]:
     """
-    Prepare X, y, categorical columns, and numerical columns
-    for machine learning models.
+    Prepare datasets for ML modeling.
+
+    Returns
+    -------
+    X : feature matrix
+    y : target variable
+    entity_df : dataframe with identifiers for traceability
+    categorical_columns : list
+    numerical_columns : list
     """
 
     data = create_features(df)
 
-    # Remove identifiers and leakage variables
+    # Preserve identifiers for traceability
+    entity_cols = [col for col in ID_COLUMNS if col in data.columns]
+    entity_df = data[entity_cols].copy()
+
+    # Remove identifiers, leakage variables, and raw fields
     drop_cols = ID_COLUMNS + LEAKAGE_COLUMNS + RAW_EXCLUDE_COLUMNS
     existing_drop_cols = [col for col in drop_cols if col in data.columns]
 
@@ -205,7 +216,7 @@ def get_modeling_data(
     y = data[TARGET_COLUMN]
 
     # Identify categorical and numerical columns present in X
-    cat_cols = [col for col in CATEGORICAL_COLUMNS if col in X.columns]
-    num_cols = [col for col in NUMERICAL_COLUMNS if col in X.columns]
+    categorical_cols = [col for col in CATEGORICAL_COLUMNS if col in X.columns]
+    numerical_cols = [col for col in NUMERICAL_COLUMNS if col in X.columns]
 
-    return X, y, cat_cols, num_cols
+    return X, y, entity_df, categorical_cols, numerical_cols
