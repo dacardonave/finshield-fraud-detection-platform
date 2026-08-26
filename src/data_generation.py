@@ -17,6 +17,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from src.feature_engineering import compute_risk_signals
+
 
 # -----------------------------
 # Configuration
@@ -174,52 +176,10 @@ def generate_transactions(customers: pd.DataFrame, config: SimulationConfig) -> 
 # -----------------------------
 
 def assign_fraud_labels(transactions: pd.DataFrame, config: SimulationConfig) -> pd.DataFrame:
-    df = transactions.copy()
-
-    # Core rule-based features
-    df["amount_vs_avg_ratio"] = df["transaction_amount"] / (df["avg_amount_30d"] + 1)
-    df["is_high_amount"] = (df["amount_vs_avg_ratio"] > 2.8).astype(int)
-    df["is_very_high_amount"] = (df["amount_vs_avg_ratio"] > 4.5).astype(int)
-    df["is_night_transaction"] = df["hour"].isin([0, 1, 2, 3, 4]).astype(int)
-    df["is_high_risk_merchant"] = (df["merchant_risk_score"] > 0.75).astype(int)
-    df["is_new_device"] = (df["device_type"] != df["preferred_device_type"]).astype(int)
-    df["is_foreign_transaction"] = (df["transaction_city"] != df["customer_home_city"]).astype(int)
-
-    # Base channel risk
-    df["channel_risk"] = df["channel"].map({
-        "web": 1.20,
-        "app": 0.75,
-        "pos": 0.30
-    })
-
-    # Base merchant category risk
-    df["category_risk"] = df["merchant_category"].map({
-        "electronics": 1.10,
-        "gaming": 1.00,
-        "travel": 0.90,
-        "fashion": 0.55,
-        "restaurants": 0.25,
-        "grocery": 0.20,
-        "fuel": 0.15,
-        "utilities": 0.10
-    })
-
-    # Interaction terms
-    df["high_amount_new_device"] = (
-        (df["is_high_amount"] == 1) & (df["is_new_device"] == 1)
-    ).astype(int)
-
-    df["foreign_high_risk_merchant"] = (
-        (df["is_foreign_transaction"] == 1) & (df["is_high_risk_merchant"] == 1)
-    ).astype(int)
-
-    df["web_night_transaction"] = (
-        (df["channel"] == "web") & (df["is_night_transaction"] == 1)
-    ).astype(int)
-
-    df["very_high_amount_foreign"] = (
-        (df["is_very_high_amount"] == 1) & (df["is_foreign_transaction"] == 1)
-    ).astype(int)
+    # Risk signals are computed by the same function used at inference
+    # time (see feature_engineering.compute_risk_signals), so the
+    # training-data simulation and live scoring can never drift apart.
+    df = compute_risk_signals(transactions)
 
     # Continuous latent risk score
     df["fraud_risk_score"] = (
