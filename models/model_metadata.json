@@ -1,0 +1,85 @@
+{
+  "model_name": "logistic_regression",
+  "best_params": {
+    "model__C": 0.01
+  },
+  "decision_threshold": 0.66,
+  "threshold_selection_method": "expected_cost_minimization",
+  "false_positive_friction_cost_assumption": 5.0,
+  "no_model_baseline_cost": 41747.19,
+  "estimated_cost_reduction_pct": 21.78661605727236,
+  "cv_comparison": [
+    {
+      "model": "logistic_regression",
+      "roc_auc_mean": 0.7134735527769912,
+      "roc_auc_std": 0.012167253249842587,
+      "average_precision_mean": 0.09498860380341607,
+      "average_precision_std": 0.010217870529846317,
+      "f1_mean": 0.12493967903665064,
+      "f1_std": 0.004649823891247497
+    },
+    {
+      "model": "hist_gradient_boosting",
+      "roc_auc_mean": 0.6976640017764864,
+      "roc_auc_std": 0.015907292310731843,
+      "average_precision_mean": 0.08881567950934557,
+      "average_precision_std": 0.010669337909373921,
+      "f1_mean": 0.1283074710739584,
+      "f1_std": 0.005306492748814568
+    },
+    {
+      "model": "random_forest",
+      "roc_auc_mean": 0.6813395618559822,
+      "roc_auc_std": 0.012223860663308337,
+      "average_precision_mean": 0.08130633822557425,
+      "average_precision_std": 0.005613204452883462,
+      "f1_mean": 0.0,
+      "f1_std": 0.0
+    },
+    {
+      "model": "dummy",
+      "roc_auc_mean": 0.5,
+      "roc_auc_std": 0.0,
+      "average_precision_mean": 0.033299999999999996,
+      "average_precision_std": 2.500000000000002e-05,
+      "f1_mean": 0.0,
+      "f1_std": 0.0
+    }
+  ],
+  "test_metrics_at_chosen_threshold": {
+    "threshold": 0.66,
+    "precision": 0.1027336860670194,
+    "recall": 0.34984984984984985,
+    "f1": 0.15882753919563736,
+    "roc_auc": 0.7009365318561553,
+    "pr_auc": 0.08365713530122641,
+    "confusion_matrix": [
+      [
+        17299,
+        2035
+      ],
+      [
+        433,
+        233
+      ]
+    ]
+  },
+  "test_metrics_at_default_threshold_0.5": {
+    "threshold": 0.5,
+    "precision": 0.06884123265453235,
+    "recall": 0.5735735735735735,
+    "f1": 0.12292839903459372,
+    "roc_auc": 0.7009365318561553,
+    "pr_auc": 0.08365713530122641,
+    "confusion_matrix": [
+      [
+        14167,
+        5167
+      ],
+      [
+        284,
+        382
+      ]
+    ]
+  }
+}

@@ -28,3 +28,13 @@ outputs/reports/*
 !models/.gitkeep
 !outputs/figures/.gitkeep
 !outputs/reports/.gitkeep
+
+# Track the production model artifact, its metadata, and the
+# portfolio-facing figures/reports. Large per-row prediction dumps and
+# the raw generated dataset stay untracked (regenerable, not needed to
+# review the project).
+!models/model.joblib
+!models/model_metadata.json
+!outputs/figures/*.png
+!outputs/reports/*.md
+!outputs/reports/*.csv
