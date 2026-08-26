@@ -7,4 +7,5 @@ notebook
 fastapi
 uvicorn
 streamlit
+plotly
 joblib
