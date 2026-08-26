@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+# Lets `from src...` / `from api...` imports resolve the same way whether
+# pytest is invoked from the project root or from another directory,
+# without every test file needing its own sys.path hack.
+pythonpath = ["."]
+testpaths = ["tests"]
