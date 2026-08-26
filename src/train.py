@@ -63,11 +63,18 @@ TEST_SIZE = 0.20
 CV_FOLDS = 5
 TUNING_CV_FOLDS = 3
 TUNING_N_ITER = 15
-DATA_PATH = "data/raw/transactions.csv"
 
-MODEL_DIR = Path("models")
-FIGURES_DIR = Path("outputs/figures")
-REPORTS_DIR = Path("outputs/reports")
+# Resolve paths relative to this file's location (project_root/src/train.py)
+# rather than the current working directory. This makes the module safe to
+# import from anywhere - the training script, a notebook running with cwd
+# in notebooks/, the API, or tests - without silently writing artifacts to
+# the wrong place.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_PATH = PROJECT_ROOT / "data/raw/transactions.csv"
+
+MODEL_DIR = PROJECT_ROOT / "models"
+FIGURES_DIR = PROJECT_ROOT / "outputs/figures"
+REPORTS_DIR = PROJECT_ROOT / "outputs/reports"
 
 for _dir in (MODEL_DIR, FIGURES_DIR, REPORTS_DIR):
     _dir.mkdir(parents=True, exist_ok=True)
