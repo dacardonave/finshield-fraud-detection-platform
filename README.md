@@ -134,6 +134,16 @@ pytest                           # 24 tests, ~2s
 
 Or open the notebooks in order (`01` → `02` → `03`) for the full narrated walkthrough with the reasoning behind every decision.
 
+### Or run it with Docker
+
+Both the API and the Streamlit demo run from the same image (they share the same dependencies and the same trained model, so there's no reason to build two):
+
+```bash
+docker compose up --build
+# API:  http://localhost:8000/docs
+# Demo: http://localhost:8501
+```
+
 ---
 
 ## API example
@@ -181,7 +191,7 @@ Every variable — including which ones are deliberately excluded from training 
 - [x] Real-time inference API (FastAPI)
 - [x] Interactive demo (Streamlit)
 - [x] Test suite (pytest)
-- [ ] Containerization (Docker)
+- [x] Containerization (Docker)
 - [ ] CI (GitHub Actions)
 - [ ] Live deployment
 
