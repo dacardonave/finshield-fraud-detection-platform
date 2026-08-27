@@ -1,0 +1,39 @@
+# CI for the FinShield Fraud Detection Platform.
+#
+# Runs on every push and pull request to master: lints the Python source
+# (src/, api/, streamlit_app.py, tests/ - notebooks are intentionally
+# excluded, see pyproject.toml) and runs the full pytest suite, which
+# scores real transactions through the actual model committed at
+# models/model.joblib. If this workflow is green, the API, the demo, and
+# the training pipeline all still work as claimed in the README.
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Run tests
+        run: pytest -v

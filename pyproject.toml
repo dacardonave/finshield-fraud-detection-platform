@@ -4,3 +4,9 @@
 # without every test file needing its own sys.path hack.
 pythonpath = ["."]
 testpaths = ["tests"]
+
+[tool.ruff]
+# Notebooks intentionally use patterns (semicolon-joined plotting calls,
+# imports after a %matplotlib inline magic) that are idiomatic in Jupyter
+# but would just be noise under the same rules as the .py source tree.
+extend-exclude = ["notebooks"]
