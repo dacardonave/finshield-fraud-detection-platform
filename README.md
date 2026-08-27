@@ -2,6 +2,8 @@
 
 An end-to-end fraud detection system for card and digital payment transactions: synthetic data generation → feature engineering → model comparison & tuning → **business-cost-driven decision threshold** → real-time inference API → interactive demo. Built as a portfolio project, engineered like a production one.
 
+**🔗 Live API:** [finshield-fraud-detection-platform.onrender.com/docs](https://finshield-fraud-detection-platform.onrender.com/docs) *(free tier — the first request after a period of inactivity can take 30-50s to wake it up)*
+
 > **TL;DR:** Trained and compared 4 models on 100,000 simulated transactions. The winner (Logistic Regression) isn't the fanciest model — it's the one that matches how the data was actually generated, and it's proven with cross-validation, not guessed. Instead of the default 50% cutoff, the decision threshold was chosen to minimize *estimated dollar cost*, cutting expected fraud-related losses by **~22% vs. taking no action at all**. Full reasoning in [`outputs/reports/final_report.md`](outputs/reports/final_report.md) and [`notebooks/03_modeling.ipynb`](notebooks/03_modeling.ipynb).
 
 ---
@@ -192,8 +194,8 @@ Every variable — including which ones are deliberately excluded from training 
 - [x] Interactive demo (Streamlit)
 - [x] Test suite (pytest)
 - [x] Containerization (Docker)
-- [ ] CI (GitHub Actions)
-- [ ] Live deployment
+- [x] CI (GitHub Actions)
+- [x] Live deployment — API on Render (demo on Hugging Face Spaces coming next)
 
 ## License
 
