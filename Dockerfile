@@ -32,4 +32,10 @@ USER appuser
 
 EXPOSE 8000 8501
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Cloud platforms like Render assign a port at runtime via the $PORT
+# env var and expect the app to listen there - they don't let you pick
+# a fixed one. Locally (docker run / docker compose), $PORT is unset,
+# so this falls back to 8000, same as before. Explicit "sh -c" (JSON
+# form) rather than bare shell-form CMD, so Docker forwards stop
+# signals correctly while still letting ${PORT:-8000} expand.
+CMD ["sh", "-c", "uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
